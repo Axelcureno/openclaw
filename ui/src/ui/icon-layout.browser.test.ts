@@ -61,7 +61,7 @@ describe("icon layout styling", () => {
     expect(button).not.toBeNull();
     expect(svg).not.toBeNull();
     expect(getComputedStyle(button!).display).toBe("flex");
-    expect(getComputedStyle(svg!).width).toBe("18px");
-    expect(getComputedStyle(svg!).height).toBe("18px");
+    expect(getComputedStyle(svg!).width).toBe("16px");
+    expect(getComputedStyle(svg!).height).toBe("16px");
   });
 });

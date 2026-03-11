@@ -45,6 +45,7 @@ export type ConfigProps = {
   onSave: () => void;
   onApply: () => void;
   onUpdate: () => void;
+  onOpenFile?: () => void;
   version: string;
   theme: ThemeName;
   themeMode: ThemeMode;
@@ -52,6 +53,7 @@ export type ConfigProps = {
   setThemeMode: (mode: ThemeMode, context?: ThemeTransitionContext) => void;
   gatewayUrl: string;
   assistantName: string;
+  configPath?: string | null;
   navRootLabel?: string;
   includeSections?: string[];
   excludeSections?: string[];
@@ -680,7 +682,6 @@ export function resetConfigViewStateForTests() {
 
 export function renderConfig(props: ConfigProps) {
   const showModeToggle = props.showModeToggle ?? false;
-  const formMode = showModeToggle ? props.formMode : "form";
   const validity = props.valid == null ? "unknown" : props.valid ? "valid" : "invalid";
   const includeVirtualSections = props.includeVirtualSections ?? true;
   const include = props.includeSections?.length ? new Set(props.includeSections) : null;
@@ -691,6 +692,11 @@ export function renderConfig(props: ConfigProps) {
     unsupportedPaths: scopeUnsupportedPaths(rawAnalysis.unsupportedPaths, { include, exclude }),
   };
   const formUnsafe = analysis.schema ? analysis.unsupportedPaths.length > 0 : false;
+  // Force raw mode when form can't safely represent all config fields
+  const formMode = formUnsafe ? "raw" : showModeToggle ? props.formMode : "form";
+  if (formUnsafe && props.formMode === "form") {
+    props.onFormModeChange("raw");
+  }
   const envSensitiveVisible = !props.streamMode && envRevealed;
 
   // Build categorised nav from schema - only include sections that exist in the schema
@@ -783,6 +789,19 @@ export function renderConfig(props: ConfigProps) {
             }
           </div>
           <div class="config-actions__right">
+            ${
+              props.onOpenFile
+                ? html`
+                    <button
+                      class="btn btn--sm"
+                      title=${props.configPath ? `Open ${props.configPath}` : "Open config file"}
+                      @click=${props.onOpenFile}
+                    >
+                      ${icons.fileText} Open
+                    </button>
+                  `
+                : nothing
+            }
             <button
               class="btn btn--sm"
               ?disabled=${props.loading}
@@ -877,7 +896,8 @@ export function renderConfig(props: ConfigProps) {
                     <div class="config-mode-toggle">
                       <button
                         class="config-mode-toggle__btn ${formMode === "form" ? "active" : ""}"
-                        ?disabled=${props.schemaLoading || !props.schema}
+                        ?disabled=${formUnsafe || props.schemaLoading || !props.schema}
+                        title=${formUnsafe ? "Form view can't safely edit some fields" : ""}
                         @click=${() => props.onFormModeChange("form")}
                       >
                         Form
@@ -1050,15 +1070,6 @@ export function renderConfig(props: ConfigProps) {
                         },
                       })
                 }
-                ${
-                  formUnsafe
-                    ? html`
-                        <div class="callout danger" style="margin-top: 12px">
-                          Form view can't safely edit some fields. Use Raw to avoid losing config entries.
-                        </div>
-                      `
-                    : nothing
-                }
               `
                 : (() => {
                     const sensitiveCount = countSensitiveConfigValues(
@@ -1076,6 +1087,16 @@ export function renderConfig(props: ConfigProps) {
                     const canReveal =
                       (sensitiveCount > 0 || rawHasSensitiveKeywords) && !props.streamMode;
                     return html`
+                    ${
+                      formUnsafe
+                        ? html`
+                            <div class="callout info" style="margin-bottom: 12px">
+                              Form view is disabled because your config contains fields the form editor can't safely represent.
+                              Edit in Raw to avoid losing entries.
+                            </div>
+                          `
+                        : nothing
+                    }
                     <label class="field config-raw-field">
                       <span style="display:flex;align-items:center;gap:8px;">
                         Raw JSON5

@@ -263,3 +263,21 @@ export function ensureAgentConfigEntry(state: ConfigState, agentId: string): num
   updateConfigFormValue(state, ["agents", "list", nextIndex, "id"], normalizedAgentId);
   return nextIndex;
 }
+
+export async function openConfigFile(state: ConfigState): Promise<void> {
+  if (!state.client || !state.connected) {
+    return;
+  }
+  try {
+    await state.client.request("config.openFile", {});
+  } catch {
+    const path = state.configSnapshot?.path;
+    if (path) {
+      try {
+        await navigator.clipboard.writeText(path);
+      } catch {
+        // ignore
+      }
+    }
+  }
+}

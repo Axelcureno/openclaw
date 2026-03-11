@@ -339,14 +339,14 @@
 }
 
 .agent-chat__input:focus-within {
-  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 @supports (backdrop-filter: blur(1px)) {
   .agent-chat__input {
-    backdrop-filter: blur(16px) saturate(1.8);
-    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    backdrop-filter: blur(12px) saturate(1.6);
+    -webkit-backdrop-filter: blur(12px) saturate(1.6);
   }
 }
 
@@ -449,21 +449,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-md);
   border: none;
   background: var(--accent);
   color: var(--accent-foreground);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--duration-fast) ease;
+  transition:
+    background var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
   padding: 0;
 }
 
 .chat-send-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.5px;
@@ -473,11 +475,11 @@
 
 .chat-send-btn:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 24%, transparent);
+  box-shadow: 0 2px 10px rgba(255, 92, 92, 0.25);
 }
 
 .chat-send-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 

@@ -4,6 +4,17 @@
 
 /* Tablet: Horizontal nav */
 @media (max-width: 1100px) {
+  .shell--nav-collapsed .shell-nav {
+    width: auto;
+    min-width: 0;
+  }
+
+  .sidebar--collapsed {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
   .nav {
     display: flex;
     flex-direction: row;
@@ -46,6 +57,17 @@
 
 /* Mobile-specific styles */
 @media (max-width: 600px) {
+  .shell--nav-collapsed .shell-nav {
+    width: auto;
+    min-width: 0;
+  }
+
+  .sidebar--collapsed {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
   .shell {
     --shell-pad: 8px;
     --shell-gap: 8px;
