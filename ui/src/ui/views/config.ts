@@ -651,14 +651,27 @@ function renderAppearanceSection(props: ConfigProps) {
   `;
 }
 
-let rawRevealed = false;
-let envRevealed = false;
-let validityDismissed = false;
-const revealedSensitivePaths = new Set<string>();
+interface ConfigEphemeralState {
+  rawRevealed: boolean;
+  envRevealed: boolean;
+  validityDismissed: boolean;
+  revealedSensitivePaths: Set<string>;
+}
+
+function createConfigEphemeralState(): ConfigEphemeralState {
+  return {
+    rawRevealed: false,
+    envRevealed: false,
+    validityDismissed: false,
+    revealedSensitivePaths: new Set(),
+  };
+}
+
+const cvs = createConfigEphemeralState();
 
 function isSensitivePathRevealed(path: Array<string | number>): boolean {
   const key = pathKey(path);
-  return key ? revealedSensitivePaths.has(key) : false;
+  return key ? cvs.revealedSensitivePaths.has(key) : false;
 }
 
 function toggleSensitivePathReveal(path: Array<string | number>) {
@@ -666,18 +679,15 @@ function toggleSensitivePathReveal(path: Array<string | number>) {
   if (!key) {
     return;
   }
-  if (revealedSensitivePaths.has(key)) {
-    revealedSensitivePaths.delete(key);
+  if (cvs.revealedSensitivePaths.has(key)) {
+    cvs.revealedSensitivePaths.delete(key);
   } else {
-    revealedSensitivePaths.add(key);
+    cvs.revealedSensitivePaths.add(key);
   }
 }
 
 export function resetConfigViewStateForTests() {
-  rawRevealed = false;
-  envRevealed = false;
-  validityDismissed = false;
-  revealedSensitivePaths.clear();
+  Object.assign(cvs, createConfigEphemeralState());
 }
 
 export function renderConfig(props: ConfigProps) {
@@ -697,7 +707,7 @@ export function renderConfig(props: ConfigProps) {
   if (formUnsafe && props.formMode === "form") {
     props.onFormModeChange("raw");
   }
-  const envSensitiveVisible = !props.streamMode && envRevealed;
+  const envSensitiveVisible = !props.streamMode && cvs.envRevealed;
 
   // Build categorised nav from schema - only include sections that exist in the schema
   const schemaProps = analysis.schema?.properties ?? {};
@@ -916,7 +926,7 @@ export function renderConfig(props: ConfigProps) {
         </div>
 
         ${
-          validity === "invalid" && !validityDismissed
+          validity === "invalid" && !cvs.validityDismissed
             ? html`
               <div class="config-validity-warning">
                 <svg class="config-validity-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
@@ -928,7 +938,7 @@ export function renderConfig(props: ConfigProps) {
                 <button
                   class="btn btn--sm"
                   @click=${() => {
-                    validityDismissed = true;
+                    cvs.validityDismissed = true;
                     props.onRawChange(props.raw);
                   }}
                 >Don't remind again</button>
@@ -1015,7 +1025,7 @@ export function renderConfig(props: ConfigProps) {
                           if (props.streamMode) {
                             return;
                           }
-                          envRevealed = !envRevealed;
+                          cvs.envRevealed = !cvs.envRevealed;
                           props.onRawChange(props.raw);
                         }}
                       >
@@ -1083,7 +1093,7 @@ export function renderConfig(props: ConfigProps) {
                       props.streamMode && containsSensitiveKeywords(props.raw);
                     const blurred =
                       (sensitiveCount > 0 || rawHasSensitiveKeywords) &&
-                      (props.streamMode || !rawRevealed);
+                      (props.streamMode || !cvs.rawRevealed);
                     const canReveal =
                       (sensitiveCount > 0 || rawHasSensitiveKeywords) && !props.streamMode;
                     return html`
@@ -1121,7 +1131,7 @@ export function renderConfig(props: ConfigProps) {
                                   if (!canReveal) {
                                     return;
                                   }
-                                  rawRevealed = !rawRevealed;
+                                  cvs.rawRevealed = !cvs.rawRevealed;
                                   props.onRawChange(props.raw);
                                 }}
                               >

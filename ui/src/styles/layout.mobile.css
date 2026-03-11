@@ -2,60 +2,8 @@
    Mobile Layout
    =========================================== */
 
-/* Tablet: Horizontal nav */
+/* Tablet and smaller: collapse the left nav into a horizontal rail. */
 @media (max-width: 1100px) {
-  .shell--nav-collapsed .shell-nav {
-    width: auto;
-    min-width: 0;
-  }
-
-  .sidebar--collapsed {
-    width: auto;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  .nav {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 10px 14px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nav-group {
-    display: contents;
-  }
-
-  .nav-group__items {
-    display: contents;
-  }
-
-  .nav-label {
-    display: none;
-  }
-
-  .nav-group--collapsed .nav-group__items {
-    display: contents;
-  }
-
-  .nav-item {
-    padding: 8px 14px;
-    font-size: 13px;
-    border-radius: var(--radius-md);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-}
-
-@media (max-width: 768px) {
   .shell,
   .shell--nav-collapsed {
     grid-template-columns: minmax(0, 1fr);
@@ -70,12 +18,14 @@
     grid-template-rows: var(--shell-topbar-height) 0 minmax(0, 1fr);
   }
 
+  .shell-nav,
   .shell--nav-collapsed .shell-nav {
     width: auto;
     min-width: 0;
     border-bottom: 1px solid var(--border);
   }
 
+  .sidebar,
   .sidebar--collapsed {
     width: auto;
     min-width: 0;
@@ -85,12 +35,18 @@
     border-right: none;
   }
 
+  .sidebar-header,
   .sidebar--collapsed .sidebar-header {
     justify-content: flex-start;
     padding: 8px 10px;
     flex: 0 0 auto;
   }
 
+  .sidebar-brand {
+    display: none;
+  }
+
+  .sidebar-nav,
   .sidebar--collapsed .sidebar-nav {
     flex: 1 1 auto;
     display: flex;
@@ -104,21 +60,33 @@
     scrollbar-width: none;
   }
 
+  .sidebar-nav::-webkit-scrollbar,
   .sidebar--collapsed .sidebar-nav::-webkit-scrollbar {
     display: none;
   }
 
+  .nav-group,
+  .nav-group__items,
   .sidebar--collapsed .nav-group,
   .sidebar--collapsed .nav-group__items {
     display: contents;
   }
 
-  .sidebar--collapsed .nav-group {
+  .nav-group {
     margin-bottom: 0;
   }
 
+  .sidebar-nav .nav-group__label {
+    display: none;
+  }
+
+  .nav-item,
   .sidebar--collapsed .nav-item {
     margin: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: var(--radius-md);
+    white-space: nowrap;
     flex: 0 0 auto;
   }
 
@@ -127,6 +95,7 @@
     content: none;
   }
 
+  .sidebar-footer,
   .sidebar--collapsed .sidebar-footer {
     display: none;
   }
@@ -134,17 +103,6 @@
 
 /* Mobile-specific styles */
 @media (max-width: 600px) {
-  .shell--nav-collapsed .shell-nav {
-    width: auto;
-    min-width: 0;
-  }
-
-  .sidebar--collapsed {
-    width: auto;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
   .shell {
     --shell-pad: 8px;
     --shell-gap: 8px;
@@ -193,24 +151,17 @@
     display: none;
   }
 
-  /* Nav */
-  .nav {
-    padding: 8px 10px;
-    gap: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  .shell-nav {
+    border-bottom-width: 0;
   }
 
-  .nav::-webkit-scrollbar {
-    display: none;
+  .sidebar-header {
+    padding: 6px 8px;
   }
 
-  .nav-group {
-    display: contents;
-  }
-
-  .nav-label {
-    display: none;
+  .sidebar-nav {
+    gap: 6px;
+    padding: 6px 8px 6px 0;
   }
 
   .nav-item {
@@ -426,10 +377,6 @@
 
   .brand-title {
     font-size: 13px;
-  }
-
-  .nav {
-    padding: 6px 8px;
   }
 
   .nav-item {
