@@ -732,6 +732,55 @@ describe("applyExtraParamsToAgent", () => {
     expect(payloads[0]?.thinking).toEqual({ type: "disabled" });
   });
 
+  it("applies Moonshot payload compatibility to Ollama Kimi cloud models", () => {
+    const payloads: Record<string, unknown>[] = [];
+    const baseStreamFn: StreamFn = (_model, _context, options) => {
+      const payload: Record<string, unknown> = { tool_choice: "required" };
+      options?.onPayload?.(payload, _model);
+      payloads.push(payload);
+      return {} as ReturnType<StreamFn>;
+    };
+    const agent = { streamFn: baseStreamFn };
+
+    applyExtraParamsToAgent(agent, undefined, "ollama", "kimi-k2.5:cloud", undefined, "low");
+
+    const model = {
+      api: "openai-completions",
+      provider: "ollama",
+      id: "kimi-k2.5:cloud",
+    } as Model<"openai-completions">;
+    const context: Context = { messages: [] };
+    void agent.streamFn?.(model, context, {});
+
+    expect(payloads).toHaveLength(1);
+    expect(payloads[0]?.thinking).toEqual({ type: "enabled" });
+    expect(payloads[0]?.tool_choice).toBe("auto");
+  });
+
+  it("maps thinkingLevel=off for Ollama Kimi cloud models through Moonshot compatibility", () => {
+    const payloads: Record<string, unknown>[] = [];
+    const baseStreamFn: StreamFn = (_model, _context, options) => {
+      const payload: Record<string, unknown> = {};
+      options?.onPayload?.(payload, _model);
+      payloads.push(payload);
+      return {} as ReturnType<StreamFn>;
+    };
+    const agent = { streamFn: baseStreamFn };
+
+    applyExtraParamsToAgent(agent, undefined, "ollama", "kimi-k2.5:cloud", undefined, "off");
+
+    const model = {
+      api: "openai-completions",
+      provider: "ollama",
+      id: "kimi-k2.5:cloud",
+    } as Model<"openai-completions">;
+    const context: Context = { messages: [] };
+    void agent.streamFn?.(model, context, {});
+
+    expect(payloads).toHaveLength(1);
+    expect(payloads[0]?.thinking).toEqual({ type: "disabled" });
+  });
+
   it("does not rewrite tool schema for kimi-coding (native Anthropic format)", () => {
     const payloads: Record<string, unknown>[] = [];
     const baseStreamFn: StreamFn = (_model, _context, options) => {
