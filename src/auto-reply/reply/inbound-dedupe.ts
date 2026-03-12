@@ -1,6 +1,7 @@
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { createDedupeCache, type DedupeCache } from "../../infra/dedupe.js";
 import { parseAgentSessionKey } from "../../sessions/session-key-utils.js";
+import { resolveGlobalSingleton } from "../../shared/global-singleton.js";
 import type { MsgContext } from "../templating.js";
 
 const DEFAULT_INBOUND_DEDUPE_TTL_MS = 20 * 60_000;
@@ -10,13 +11,14 @@ const DEFAULT_INBOUND_DEDUPE_MAX = 5000;
  * Keep inbound dedupe shared across bundled chunks so the same provider
  * message cannot bypass dedupe by entering through a different chunk copy.
  */
-const _g = globalThis as typeof globalThis & {
-  __openclaw_inbound_dedupe_cache__?: DedupeCache;
-};
-const inboundDedupeCache = (_g.__openclaw_inbound_dedupe_cache__ ??= createDedupeCache({
-  ttlMs: DEFAULT_INBOUND_DEDUPE_TTL_MS,
-  maxSize: DEFAULT_INBOUND_DEDUPE_MAX,
-}));
+const INBOUND_DEDUPE_CACHE_KEY = Symbol.for("openclaw.inboundDedupeCache");
+
+const inboundDedupeCache = resolveGlobalSingleton<DedupeCache>(INBOUND_DEDUPE_CACHE_KEY, () =>
+  createDedupeCache({
+    ttlMs: DEFAULT_INBOUND_DEDUPE_TTL_MS,
+    maxSize: DEFAULT_INBOUND_DEDUPE_MAX,
+  }),
+);
 
 const normalizeProvider = (value?: string | null) => value?.trim().toLowerCase() || "";
 

@@ -1,4 +1,5 @@
 import { diagnosticLogger as diag, logLaneDequeue, logLaneEnqueue } from "../logging/diagnostic.js";
+import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import { CommandLane } from "./lanes.js";
 /**
  * Dedicated error type thrown when a queued command is rejected because
@@ -50,18 +51,13 @@ type LaneState = {
  * Keep queue runtime state on globalThis so every bundled entry/chunk shares
  * the same lanes, counters, and draining flag in production builds.
  */
-const _g = globalThis as typeof globalThis & {
-  __openclaw_command_queue_state__?: {
-    gatewayDraining: boolean;
-    lanes: Map<string, LaneState>;
-    nextTaskId: number;
-  };
-};
-const queueState = (_g.__openclaw_command_queue_state__ ??= {
+const COMMAND_QUEUE_STATE_KEY = Symbol.for("openclaw.commandQueueState");
+
+const queueState = resolveGlobalSingleton(COMMAND_QUEUE_STATE_KEY, () => ({
   gatewayDraining: false,
   lanes: new Map<string, LaneState>(),
   nextTaskId: 1,
-});
+}));
 
 function getLaneState(lane: string): LaneState {
   const existing = queueState.lanes.get(lane);

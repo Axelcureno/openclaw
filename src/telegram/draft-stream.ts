@@ -1,5 +1,6 @@
 import type { Bot } from "grammy";
 import { createFinalizableDraftLifecycle } from "../channels/draft-stream-controls.js";
+import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import { buildTelegramThreadParams, type TelegramThreadSpec } from "./bot/helpers.js";
 import { isSafeToRetrySendError, isTelegramClientRejection } from "./network-errors.js";
 
@@ -25,14 +26,11 @@ type TelegramSendMessageDraft = (
  * Keep draft-id allocation shared across bundled chunks so concurrent preview
  * lanes do not accidentally reuse draft ids when code-split entries coexist.
  */
-const _g = globalThis as typeof globalThis & {
-  __openclaw_telegram_draft_stream_state__?: {
-    nextDraftId: number;
-  };
-};
-const draftStreamState = (_g.__openclaw_telegram_draft_stream_state__ ??= {
+const TELEGRAM_DRAFT_STREAM_STATE_KEY = Symbol.for("openclaw.telegramDraftStreamState");
+
+const draftStreamState = resolveGlobalSingleton(TELEGRAM_DRAFT_STREAM_STATE_KEY, () => ({
   nextDraftId: 0,
-});
+}));
 
 function allocateTelegramDraftId(): number {
   draftStreamState.nextDraftId =

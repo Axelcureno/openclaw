@@ -13,6 +13,7 @@ import {
   type SessionBindingRecord,
 } from "../infra/outbound/session-binding-service.js";
 import { normalizeAccountId } from "../routing/session-key.js";
+import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 
 const DEFAULT_THREAD_BINDING_IDLE_TIMEOUT_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_THREAD_BINDING_MAX_AGE_MS = 0;
@@ -71,13 +72,15 @@ type TelegramThreadBindingsState = {
  * Keep Telegram thread binding state shared across bundled chunks so routing,
  * binding lookups, and binding mutations all observe the same live registry.
  */
-const _g = globalThis as typeof globalThis & {
-  __openclaw_telegram_thread_bindings_state__?: TelegramThreadBindingsState;
-};
-const threadBindingsState = (_g.__openclaw_telegram_thread_bindings_state__ ??= {
-  managersByAccountId: new Map<string, TelegramThreadBindingManager>(),
-  bindingsByAccountConversation: new Map<string, TelegramThreadBindingRecord>(),
-});
+const TELEGRAM_THREAD_BINDINGS_STATE_KEY = Symbol.for("openclaw.telegramThreadBindingsState");
+
+const threadBindingsState = resolveGlobalSingleton<TelegramThreadBindingsState>(
+  TELEGRAM_THREAD_BINDINGS_STATE_KEY,
+  () => ({
+    managersByAccountId: new Map<string, TelegramThreadBindingManager>(),
+    bindingsByAccountConversation: new Map<string, TelegramThreadBindingRecord>(),
+  }),
+);
 const MANAGERS_BY_ACCOUNT_ID = threadBindingsState.managersByAccountId;
 const BINDINGS_BY_ACCOUNT_CONVERSATION = threadBindingsState.bindingsByAccountConversation;
 

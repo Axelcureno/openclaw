@@ -1,3 +1,5 @@
+import { resolveGlobalMap } from "../shared/global-singleton.js";
+
 /**
  * In-memory cache of sent message IDs per chat.
  * Used to identify bot's own messages for reaction filtering ("own" mode).
@@ -13,10 +15,9 @@ type CacheEntry = {
  * Keep sent-message tracking shared across bundled chunks so Telegram reaction
  * filters see the same sent-message history regardless of which chunk recorded it.
  */
-const _g = globalThis as typeof globalThis & {
-  __openclaw_telegram_sent_messages__?: Map<string, CacheEntry>;
-};
-const sentMessages = (_g.__openclaw_telegram_sent_messages__ ??= new Map<string, CacheEntry>());
+const TELEGRAM_SENT_MESSAGES_KEY = Symbol.for("openclaw.telegramSentMessages");
+
+const sentMessages = resolveGlobalMap<string, CacheEntry>(TELEGRAM_SENT_MESSAGES_KEY);
 
 function getChatKey(chatId: number | string): string {
   return String(chatId);
